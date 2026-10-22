@@ -47,3 +47,17 @@ def get_activity(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="فعالیت یافت نشد")
     return activity
+
+
+
+from app.schemas.activity import ActivityCreate, ActivityResponse, StepActivityCreate
+
+
+@router.post("/step", response_model=ActivityResponse, status_code=status.HTTP_201_CREATED)
+def create_step_activity(
+    activity: StepActivityCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """ثبت فعالیت خودکار بر اساس قدم‌های سنسور"""
+    return activity_service.create_step_activity(db, current_user, activity)

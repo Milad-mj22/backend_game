@@ -6,19 +6,17 @@ from app.database import Base
 
 
 class ActivityType(str, enum.Enum):
-    """انواع فعالیت‌ها طبق سند"""
-    WALKING = "walking"        # پیاده‌روی
-    RUNNING = "running"        # دویدن
-    HIKING = "hiking"          # کوه‌پیمایی
-    CYCLING = "cycling"        # دوچرخه‌سواری
+    WALKING = "walking"
+    RUNNING = "running"
+    HIKING = "hiking"
+    CYCLING = "cycling"
 
 
-# ضرایب امتیازدهی بر اساس سختی فعالیت (طبق سند)
 ACTIVITY_MULTIPLIERS = {
-    ActivityType.WALKING: 1.0,    # ضریب پایه
-    ActivityType.RUNNING: 1.5,    # سخت‌تر از پیاده‌روی
-    ActivityType.HIKING: 1.8,     # سخت‌تر از دویدن
-    ActivityType.CYCLING: 1.3,    # بین پیاده‌روی و دویدن
+    ActivityType.WALKING: 1.0,
+    ActivityType.RUNNING: 1.5,
+    ActivityType.HIKING: 1.8,
+    ActivityType.CYCLING: 1.3,
 }
 
 
@@ -28,17 +26,19 @@ class Activity(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     activity_type = Column(Enum(ActivityType), nullable=False)
-    
-    # داده‌های فعالیت
-    distance_km = Column(Float, nullable=False)        # مسافت (کیلومتر)
-    duration_minutes = Column(Integer, nullable=False)  # مدت زمان (دقیقه)
-    
-    # امتیاز محاسبه‌شده
-    base_score = Column(Float, nullable=False)      # امتیاز خام
-    final_score = Column(Float, nullable=False)     # امتیاز نهایی (با ضریب)
-    
-    # زمان
+
+    distance_km = Column(Float, nullable=False)
+    duration_minutes = Column(Integer, nullable=False)
+    base_score = Column(Float, nullable=False)
+    final_score = Column(Float, nullable=False)
+
+    # === فیلدهای جدید برای ثبت خودکار ===
+    steps = Column(Integer, nullable=True)
+    start_lat = Column(Float, nullable=True)
+    start_lng = Column(Float, nullable=True)
+    end_lat = Column(Float, nullable=True)
+    end_lng = Column(Float, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    # ارتباط با کاربر
+
     user = relationship("User", backref="activities")
