@@ -6,6 +6,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.clan import Clan
 from app.models.neighborhood import Neighborhood
+from app.models.city import City  # اضافه کنید
 
 router = APIRouter(
     prefix="/leaderboard",
@@ -66,28 +67,28 @@ def get_top_clans(limit: int = 20, db: Session = Depends(get_db)):
 @router.get("/neighborhoods")
 def get_top_neighborhoods(limit: int = 20, db: Session = Depends(get_db)):
     """رتبه‌بندی محله‌ها بر اساس مجموع امتیاز کاربران"""
-    # مجموع امتیاز کاربران هر محله
     results = (
         db.query(
             Neighborhood.id,
             Neighborhood.name,
-            Neighborhood.city,
+            City.name.label("city_name"),  # ← نام شهر از جدول City
             func.sum(User.total_score).label("total_score"),
             func.count(User.id).label("user_count")
         )
         .join(User, User.neighborhood_id == Neighborhood.id)
-        .group_by(Neighborhood.id)
+        .join(City, City.id == Neighborhood.city_id)  # ← جوین با City
+        .group_by(Neighborhood.id, City.name)
         .order_by(desc("total_score"))
         .limit(limit)
         .all()
     )
-    
+
     return [
         {
             "rank": i + 1,
             "neighborhood_id": r.id,
             "name": r.name,
-            "city": r.city,
+            "city": r.city_name,  # ← استفاده از city_name
             "total_score": r.total_score or 0,
             "user_count": r.user_count,
         }
